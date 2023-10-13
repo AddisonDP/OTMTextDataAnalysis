@@ -16,5 +16,5 @@ def dataframetostring(df):
     return df.to_string(columns=None, buf=None, index=False, na_rep="NaN")
 
 # Commented Currently for Functionality
-# pand = pd.read_csv("[INSERT DATA LINK HERE]", usecols=['Answer #1', 'Answer #2', 'Answer #3'])
+# pand = pd.read_csv("[INSERT DATA LINK HERE]", usecols=[INSERT COLUMNS HERE])
 # string = dataframetostring(pand)
