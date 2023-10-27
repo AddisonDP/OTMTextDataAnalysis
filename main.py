@@ -1,10 +1,12 @@
-#Python Libraries Used; Spacy and Pandas are Open Source
+#Python Libraries Used; Spacy and Pandas and Gensim are Open Source
 #Addison Reminder: CITATION NEEDED FOR ALL MODULES + TRAINING DATA SETS
 import spacy
 import pandas as pd
 import gensim
 import re
 from collections import Counter
+import spacy_fastlang
+import plot-likert
 
 #Load Core Libaries
 nlpen = spacy.load("en_core_web_trf")
@@ -14,16 +16,40 @@ nlpes = spacy.load("es_dep_news_trf")
 eng = spacy.lang.en.English()
 esp = spacy.lang.es.Spanish()
 
-#Preprocessing Function: Turns Pandas DataFrame Object into a String for NLP
-def d2s(df):
-    return df.to_string(columns=None, buf=None, index=False, na_rep="NaN")
+engdata = []
+espdata = []
+
+#Preprocessing Functions: Turns Pandas DataFrame Object into a String for NLP
+def d2s(txt):
+    string = " ".join(txt)
+    return string
+
+# pand = re.sub(" +", " ", d2s(pd.read_csv("[CSVDATA]", usecols=[COLUMNS])).replace("\n"," ").replace("NaN", "")).replace("COLUMNS", "")
+# wcwc = nlpes(pand)
+
+def langseparate(df):
+    nlpen.add_pipe("language_detector", name='language_detector', last=True)
+    nlpes.add_pipe("language_detector", name='language_detector', last=True)
+    for i in range(df.shape[0]):
+        for j in range(df.shape[1]):
+            if nlpen(df.iat[i, j])._.language == "en":
+                engdata.append(df.iat[i, j])
+                print(engdata)
+            else:
+                if nlpes(df.iat[i, j])._.language == "es":
+                    espdata.append(df.iat[i, j])
+                    print(espdata)
+                else:
+                    print("Error")
+    print("English Data")
+    print(engdata)
+    print("Spanish Data")
+    print(espdata)
 
 def frequency(txt):
-    nouns = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "NOUN")]
+    nouns = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "NOUN") or (token.ent_iob_ == "B") or (token.ent_iob_ == "I")]
     adjectives = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "ADJ")]
     verbs = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "VERB")]
-    
-    #The Bottom Print Section is for Beta Testing; Will be Replaced with an Export-To-CSV Function
     print("Most Common Nouns")
     print(Counter(nouns).most_common(20))
     print("Most Common Adjectives")
@@ -31,4 +57,6 @@ def frequency(txt):
     print("Most Common Verbs")
     print(Counter(verbs).most_common(20))
 
-rawdata = nlpes(re.sub(" +", " ", d2s(pd.read_csv("INSERT DATA HERE", usecols=['INSERT COLS HERE'])).replace("\n"," ").replace("NaN", "")))
+def likert(df, scale, width, height):
+    picture = picture = plot_likert.plot_likert(df, scale, figsize=(width, height))
+    picture.get_figure().savefig('likertplot.png', dpi=200, bbox_inches='tight')
