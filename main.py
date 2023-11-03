@@ -7,6 +7,8 @@ import re
 from collections import Counter
 import spacy_fastlang
 import plot-likert
+import wordcloud
+import matplotlib.pyplot as plt
 
 #Load Core Libaries
 nlpen = spacy.load("en_core_web_trf")
@@ -50,13 +52,23 @@ def frequency(txt):
     nouns = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "NOUN") or (token.ent_iob_ == "B") or (token.ent_iob_ == "I")]
     adjectives = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "ADJ")]
     verbs = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "VERB")]
+    nphrases = [chunk.text for chunk in txt.noun_chunks]
     print("Most Common Nouns")
     print(Counter(nouns).most_common(20))
     print("Most Common Adjectives")
     print(Counter(adjectives).most_common(20))
     print("Most Common Verbs")
     print(Counter(verbs).most_common(20))
+    print("Commonly Clustered Terms (Noun Phrases)")
+    print(Counter(nphrases).most_common(freq))
+    usefulwords = nouns + adjectives + verbs
+    return usefulwords
 
 def likert(df, scale, width, height):
     picture = picture = plot_likert.plot_likert(df, scale, figsize=(width, height))
     picture.get_figure().savefig('likertplot.png', dpi=200, bbox_inches='tight')
+
+def wordscloud(txt):
+    wc = wordcloud.WordCloud(max_font_size=80).generate(" ".join(frequency(txt, 20)))
+    image = wc.to_image()
+    image.show()
