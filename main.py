@@ -6,7 +6,7 @@ import gensim
 import re
 from collections import Counter
 import spacy_fastlang
-import plot-likert
+import plot_likert
 import wordcloud
 import matplotlib.pyplot as plt
 
