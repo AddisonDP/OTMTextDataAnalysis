@@ -37,7 +37,7 @@ if __name__ == '__main__':
             for j in range(df.shape[1]):
                 #if/else for null values
                 if str(df.iat[i, j]) != "nan":
-                    #langid is so much better. Encoding is for the use of Spanish diacritics
+                    #langid Classification; Encoding is for the use of Spanish diacritics
                     match langid.classify(str(df.iat[i, j]))[0]:
                         case "en":
                             engdata.append(df.iat[i, j].encode('utf-8'))
@@ -57,7 +57,6 @@ if __name__ == '__main__':
         nouns = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "NOUN") or (token.ent_iob_ == "B") or (token.ent_iob_ == "I")]
         adjectives = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "ADJ")]
         verbs = [token.text for token in txt if (not token.is_stop and not token.is_punct and token.pos_ == "VERB")]
-        #Does the work for me so I don't have to deal with the BS
         print("Most Common Nouns")
         print(Counter(nouns).most_common(20))
         print("Most Common Adjectives")
@@ -97,15 +96,15 @@ if __name__ == '__main__':
         wordvec = [dcorp.doc2bow(text) for text in preproc]
         #Prepare topic modeling scores; Lowest coherence score corresponds to the desired "optimal number of topics" value
         scores = []
-        #Range is arbitrary; I am generally assuming that the optimal number of topics is less than a tenth of the available words for computational purposes
-        for numtop in range(1, math.ceil(len(dcorp)/15)):
+        #Generate topics with at least 20 words per topic; Hence division by 20 is utilized for finding the ideal number of topics.
+        for numtop in range(1, math.ceil(len(dcorp)/20)):
             #assess the viability of LDA at every 
             lda = LdaModel(wordvec, num_topics=numtop, id2word=dcorp)
             coherencemod = CoherenceModel(model=lda, corpus=wordvec, coherence='u_mass')
             coherence = coherencemod.get_coherence()
             scores.append(coherence)
             print(scores.index(min(scores)) + 1)
-        #idlda = ideal lda; Use pyLDAvis because visualizations are nicer than not having them.
+        #idlda = ideal lda; pyLDAvis is utilized for visualization.
         idlda = LdaModel(wordvec, num_topics=(scores.index(min(scores))+1), id2word=dcorp)
         finalview = gentopic.prepare(idlda, wordvec, dcorp)
         pyLDAvis.display(finalview)
